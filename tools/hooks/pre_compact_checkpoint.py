@@ -14,7 +14,9 @@ def main():
         hook_input = {}
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    checkpoint_dir = "checkpoints"
+    repo_root = os.environ.get("REPO_PATH", "/home/researcher/research-repo")
+
+    checkpoint_dir = os.path.join(".agent", "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     # Gather current state
@@ -24,33 +26,33 @@ def main():
         "reason": "pre-compact",
     }
 
-    # Read current task
-    task_file = f"tasks/{agent_name}.md"
+    # Read current task (at repo root, since orchestrator writes them there)
+    task_file = os.path.join(repo_root, "tasks", f"{agent_name}.md")
     if os.path.exists(task_file):
         with open(task_file) as f:
             checkpoint["current_task"] = f.read()[:2000]
 
-    # Read current status
-    status_file = f"status/{agent_name}.json"
+    # Read current status (agent-local)
+    status_file = os.path.join(".agent", f"{agent_name}.json")
     if os.path.exists(status_file):
         with open(status_file) as f:
             checkpoint["last_status"] = json.load(f)
 
-    # Read pending proposals
-    proposals = glob.glob("proposals/*.md")
+    # Read pending proposals (at repo root)
+    proposals = glob.glob(os.path.join(repo_root, "proposals", "*.md"))
     pending = []
     for p in proposals:
         try:
             with open(p) as f:
                 content = f.read()
                 if "status: approved" not in content and "status: rejected" not in content:
-                    pending.append({"file": p, "preview": content[:500]})
+                    pending.append({"file": os.path.basename(p), "preview": content[:500]})
         except Exception:
             pass
     checkpoint["pending_proposals"] = pending
 
-    # Read recent results
-    results = glob.glob("results/*-manifest.json")
+    # Read recent results (look in Experiments dirs under cwd which is the topic root)
+    results = glob.glob("Experiments/*/Results/*-manifest.json")
     recent_results = []
     for r in sorted(results, key=os.path.getmtime, reverse=True)[:5]:
         try:
@@ -60,7 +62,7 @@ def main():
             pass
     checkpoint["recent_results"] = recent_results
 
-    # Write checkpoint
+    # Write checkpoint (agent-local)
     checkpoint_file = os.path.join(checkpoint_dir, f"{agent_name}-latest.md")
     with open(checkpoint_file, "w") as f:
         f.write(f"# Checkpoint for {agent_name}\n\n")
