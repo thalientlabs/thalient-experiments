@@ -12,9 +12,10 @@ def main():
         hook_input = {}
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
+    repo_root = os.environ.get("REPO_PATH", "/home/researcher/research-repo")
 
-    # Read latest checkpoint if it exists
-    checkpoint_file = f"checkpoints/{agent_name}-latest.md"
+    # Read latest checkpoint if it exists (agent-local, relative to cwd)
+    checkpoint_file = os.path.join(".agent", "checkpoints", f"{agent_name}-latest.md")
     checkpoint_content = ""
     if os.path.exists(checkpoint_file):
         try:
@@ -23,9 +24,9 @@ def main():
         except Exception:
             pass
 
-    # Read latest 3 session summaries
+    # Read latest 3 session summaries (agent-local, relative to cwd)
     summaries = sorted(
-        glob.glob(f"sessions/{agent_name}-*.md"),
+        glob.glob(os.path.join(".agent", "sessions", f"{agent_name}-*.md")),
         key=os.path.getmtime,
         reverse=True
     )[:3]
@@ -38,9 +39,9 @@ def main():
         except Exception:
             pass
 
-    # Read current task
+    # Read current task (at repo root, since orchestrator writes them there)
     task_content = ""
-    task_file = f"tasks/{agent_name}.md"
+    task_file = os.path.join(repo_root, "tasks", f"{agent_name}.md")
     if os.path.exists(task_file):
         try:
             with open(task_file) as f:
