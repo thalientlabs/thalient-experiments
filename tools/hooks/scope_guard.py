@@ -5,9 +5,8 @@ import sys
 import os
 
 ALLOWED_PREFIXES = [
-    "experiments/", "results/", "proposals/", "status/",
-    "tasks/", "tools/", "monitoring/", "checkpoints/",
-    "sessions/", "logs/", "RESEARCH_LOG.md",
+    "Topics/", "Experiments/", ".agent/", "proposals/",
+    "RESEARCH_LOG.md", "tools/", "Readme.md",
 ]
 
 def main():
@@ -19,9 +18,13 @@ def main():
         sys.exit(0)
 
     # Normalize path - make relative to repo root
-    repo_root = os.environ.get("REPO_ROOT", "/home/daytona/research-repo")
+    repo_root = os.environ.get("REPO_ROOT", "/home/researcher/research-repo")
     if file_path.startswith(repo_root):
         file_path = file_path[len(repo_root):].lstrip("/")
+
+    # Also handle paths relative to the topic cwd
+    # If the path doesn't start with a known repo-level prefix, it's relative to cwd
+    # which is Topics/{topic}/, so those are fine as long as they're in allowed areas
 
     # Check if file is in an allowed location
     allowed = any(file_path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
