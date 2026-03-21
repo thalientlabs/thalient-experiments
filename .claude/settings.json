@@ -1,19 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Read", "Edit", "MultiEdit", "Write",
-      "Bash(python *)", "Bash(python3 *)",
-      "Bash(git *)", "Bash(modal *)",
-      "Bash(pytest *)", "Bash(pip *)",
-      "Bash(rclone *)", "Bash(aws s3 *)",
-      "Bash(mkdir *)", "Bash(cat *)", "Bash(ls *)",
-      "Bash(find *)", "Bash(grep *)", "Bash(wc *)",
-      "Bash(head *)", "Bash(tail *)", "Bash(diff *)",
-      "Bash(cd *)", "Bash(cp *)", "Bash(mv *)"
+      "Read",
+      "Edit",
+      "MultiEdit",
+      "Write",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(git *)",
+      "Bash(modal *)",
+      "Bash(pytest *)",
+      "Bash(pip *)",
+      "Bash(rclone *)",
+      "Bash(aws s3 *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(diff *)",
+      "Bash(cd *)",
+      "Bash(cp *)",
+      "Bash(mv *)"
     ],
     "deny": [
-      "Bash(rm -rf *)", "Bash(sudo *)",
-      "Bash(curl *)", "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
       "Bash(chmod 777 *)"
     ]
   },
@@ -26,14 +43,23 @@
       {
         "matcher": "Bash",
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/block_main_push.py"},
-          {"type": "command", "command": "python3 tools/hooks/rate_limit_modal.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/block_main_push.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/rate_limit_modal.py"
+          }
         ]
       },
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/scope_guard.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/scope_guard.py"
+          }
         ]
       }
     ],
@@ -41,44 +67,76 @@
       {
         "matcher": "Bash",
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/capture_outputs.py"},
-          {"type": "command", "command": "python3 tools/hooks/heartbeat.py"},
-          {"type": "command", "command": "python3 tools/hooks/check_manifest_exists.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/capture_outputs.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/heartbeat.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/check_manifest_exists.py"
+          }
         ]
       },
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/auto_format.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/auto_format.py"
+          }
         ]
       }
     ],
     "PreCompact": [
       {
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/pre_compact_checkpoint.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/pre_compact_checkpoint.py"
+          }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/session_summary.py"},
-          {"type": "command", "command": "python3 tools/hooks/task_compliance_check.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/validate_output.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/session_summary.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/task_compliance_check.py"
+          }
         ]
       }
     ],
     "SessionStart": [
       {
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/inject_context.py"}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/inject_context.py"
+          }
         ]
       }
     ],
     "Notification": [
       {
         "hooks": [
-          {"type": "command", "command": "python3 tools/hooks/forward_notification.py", "async": true}
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/forward_notification.py",
+            "async": true
+          }
         ]
       }
     ]
