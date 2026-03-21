@@ -13,7 +13,7 @@ def main():
         hook_input = {}
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    session_dir = "sessions"
+    session_dir = os.path.join(".agent", "sessions")
     os.makedirs(session_dir, exist_ok=True)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
@@ -36,9 +36,9 @@ def main():
     except Exception:
         git_diff = ""
 
-    # Read status file
+    # Read status file (agent-local)
     status = {}
-    status_file = f"status/{agent_name}.json"
+    status_file = os.path.join(".agent", f"{agent_name}.json")
     if os.path.exists(status_file):
         try:
             with open(status_file) as f:
@@ -46,9 +46,10 @@ def main():
         except Exception:
             pass
 
-    # Read task file
+    # Read task file (at repo root)
+    repo_root = os.environ.get("REPO_PATH", "/home/researcher/research-repo")
     task_content = ""
-    task_file = f"tasks/{agent_name}.md"
+    task_file = os.path.join(repo_root, "tasks", f"{agent_name}.md")
     if os.path.exists(task_file):
         try:
             with open(task_file) as f:
@@ -56,7 +57,7 @@ def main():
         except Exception:
             pass
 
-    # Write markdown summary
+    # Write markdown summary (agent-local)
     summary_file = os.path.join(session_dir, f"{agent_name}-{timestamp}.md")
     with open(summary_file, "w") as f:
         f.write(f"# Session Summary: {agent_name}\n\n")
@@ -68,7 +69,7 @@ def main():
         if git_diff:
             f.write(f"## Files Changed\n\n```\n{git_diff}\n```\n\n")
 
-    # Update status to stopped
+    # Update status to stopped (agent-local)
     status["status"] = "stopped"
     status["stopped_at"] = datetime.now(timezone.utc).isoformat()
     with open(status_file, "w") as f:
