@@ -46,7 +46,11 @@ Here is the output to validate:
 
 Review this critically. Be specific about any problems."
 
-After the validator responds, address any issues it raises before finishing."""
+After the validator responds, address any issues it raises.
+
+ALSO MANDATORY: Before you fully finish, do these two things:
+1. Update LESSONS_LEARNED.md with what you learned this session (hypothesis, outcome, why, next time).
+2. Update DECISIONS.md with any significant choices you made and your reasoning."""
 
     output = {
         "hookSpecificOutput": {
