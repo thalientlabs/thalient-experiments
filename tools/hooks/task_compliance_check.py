@@ -13,12 +13,14 @@ def main():
         hook_input = {}
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    monitoring_dir = "monitoring"
+    repo_root = os.environ.get("REPO_PATH", "/home/researcher/research-repo")
+
+    monitoring_dir = os.path.join(".agent", "monitoring")
     os.makedirs(monitoring_dir, exist_ok=True)
 
-    # Read the task assignment
+    # Read the task assignment (at repo root)
     task_content = ""
-    task_file = f"tasks/{agent_name}.md"
+    task_file = os.path.join(repo_root, "tasks", f"{agent_name}.md")
     if os.path.exists(task_file):
         try:
             with open(task_file) as f:
