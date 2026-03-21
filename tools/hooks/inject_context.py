@@ -49,7 +49,34 @@ def main():
         except Exception:
             pass
 
+    # Read LESSONS_LEARNED.md (cwd-relative, in topic dir)
+    lessons_content = ""
+    if os.path.exists("LESSONS_LEARNED.md"):
+        try:
+            with open("LESSONS_LEARNED.md") as f:
+                content = f.read()
+                # Only inject if there's actual content beyond the template
+                if "##" in content and len(content) > 200:
+                    lessons_content = content[:2000]
+        except Exception:
+            pass
+
+    # Read DECISIONS.md (cwd-relative, in topic dir)
+    decisions_content = ""
+    if os.path.exists("DECISIONS.md"):
+        try:
+            with open("DECISIONS.md") as f:
+                content = f.read()
+                if "##" in content and len(content) > 200:
+                    decisions_content = content[:2000]
+        except Exception:
+            pass
+
     context_parts = []
+    if lessons_content:
+        context_parts.append(f"## Lessons Learned (from past experiments)\n\n{lessons_content}")
+    if decisions_content:
+        context_parts.append(f"## Decision Log\n\n{decisions_content}")
     if checkpoint_content:
         context_parts.append(f"## Recent Checkpoint\n\n{checkpoint_content}")
     if task_content:
