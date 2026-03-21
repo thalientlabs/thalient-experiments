@@ -11,7 +11,7 @@ def main():
     tool_result = hook_input.get("tool_result", {})
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    log_dir = "logs"
+    log_dir = os.path.join(".agent", "logs")
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, f"{agent_name}-commands.jsonl")
 
