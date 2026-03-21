@@ -13,7 +13,11 @@ def main():
         hook_input = {}
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    orchestrator_url = os.environ.get("ORCHESTRATOR_URL", "http://localhost:8000")
+    orchestrator_url = os.environ.get("ORCHESTRATOR_URL", "")
+
+    # Skip if no orchestrator URL configured
+    if not orchestrator_url:
+        sys.exit(0)
 
     notification = {
         "agent": agent_name,
