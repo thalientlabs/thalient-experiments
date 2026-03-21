@@ -9,9 +9,9 @@ def main():
     hook_input = json.load(sys.stdin)
 
     agent_name = os.environ.get("AGENT_NAME", "unknown")
-    status_dir = "status"
-    os.makedirs(status_dir, exist_ok=True)
-    status_file = os.path.join(status_dir, f"{agent_name}.json")
+    agent_dir = ".agent"
+    os.makedirs(agent_dir, exist_ok=True)
+    status_file = os.path.join(agent_dir, f"{agent_name}.json")
 
     # Read existing status or create new
     try:
