@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Stop hook: Force a sub-agent validation pass on the agent's output.
+"""Stop hook: Call the Arbiter to validate the agent's output before finishing.
 
 On first fire (stop_hook_active=false), injects a prompt that makes Claude
-spawn a validation sub-agent to review its work. On second fire
+spawn the Arbiter agent to review its work. On second fire
 (stop_hook_active=true), exits cleanly to prevent infinite loops.
 """
 import json
 import sys
+import os
 
 
 def main():
@@ -25,32 +26,78 @@ def main():
     if len(last_message) < 200:
         sys.exit(0)
 
-    validation_prompt = """MANDATORY VALIDATION STEP â€” Before finishing, you MUST launch a sub-agent to validate your work.
+    # Build context about what the agent was doing
+    agent_name = os.environ.get("AGENT_NAME", "unknown")
+    cwd = hook_input.get("cwd", os.getcwd())
 
-Use the Agent tool with subagent_type="general-purpose" to spawn a validator with this prompt:
+    # Try to read current Status.md and Readme.md for context
+    status_context = ""
+    readme_context = ""
+    lessons_context = ""
+    decisions_context = ""
 
-"You are a critical reviewer. The research agent just produced the following output. Your job is to:
+    for status_path in ["Status.md", "Experiments/*/Status.md"]:
+        import glob
+        for f in glob.glob(os.path.join(cwd, status_path)):
+            try:
+                with open(f) as fh:
+                    status_context += fh.read()[:1000] + "\n---\n"
+            except Exception:
+                pass
 
-1. CHECK COMPLETENESS â€” Did it actually do what was asked? Are there gaps, missing steps, or hand-waved sections?
-2. CHECK REASONING â€” Are the claims supported? Are there logical errors or unsupported assumptions?
-3. CHECK VALUE â€” Is this output actually useful, or is it generic/boilerplate that adds no real insight?
-4. CHECK FOLLOW-THROUGH â€” Did it commit files, update Status.md, and leave the repo in a clean state?
+    for name in ["Readme.md", "LESSONS_LEARNED.md", "DECISIONS.md"]:
+        path = os.path.join(cwd, name)
+        if os.path.exists(path):
+            try:
+                with open(path) as fh:
+                    content = fh.read()[:1000]
+                    if name == "Readme.md":
+                        readme_context = content
+                    elif name == "LESSONS_LEARNED.md":
+                        lessons_context = content
+                    elif name == "DECISIONS.md":
+                        decisions_context = content
+            except Exception:
+                pass
 
-If you find issues, list them concisely. If the work is solid, say so briefly.
+    context_block = f"""## Agent Context
+Agent: {agent_name}
+Working directory: {cwd}
 
-Here is the output to validate:
+## Current Readme
+{readme_context[:800] if readme_context else '(empty)'}
+
+## Experiment Status
+{status_context[:800] if status_context else '(no experiments)'}
+
+## Lessons Learned
+{lessons_context[:500] if lessons_context else '(none yet)'}
+
+## Recent Decisions
+{decisions_context[:500] if decisions_context else '(none yet)'}
+
+## Agent's Last Output
+{last_message[:3000]}"""
+
+    validation_prompt = f"""MANDATORY REVIEW â€” Before finishing, you MUST call the Arbiter.
+
+Use the Agent tool with subagent_type="arbiter" and this prompt:
+
+"You are being called to review the work of agent '{agent_name}'. Here is the full context:
+
+{context_block}
 
 ---
-""" + last_message[:3000] + """
----
 
-Review this critically. Be specific about any problems."
+Evaluate this against your mandate: Is it novel? Is it cost-efficient? Is the methodology sound? Give your verdict: APPROVE, REDIRECT, REJECT, or ESCALATE."
 
-After the validator responds, address any issues it raises.
+After the Arbiter responds:
+- If APPROVE: proceed to finish. Update LESSONS_LEARNED.md and DECISIONS.md.
+- If REDIRECT: address the Arbiter's feedback before finishing.
+- If REJECT: stop what you're doing and explain the situation to the PI.
+- If ESCALATE: notify the PI via `python tools/notify.py "Arbiter escalation: [summary]"`.
 
-ALSO MANDATORY: Before you fully finish, do these two things:
-1. Update LESSONS_LEARNED.md with what you learned this session (hypothesis, outcome, why, next time).
-2. Update DECISIONS.md with any significant choices you made and your reasoning."""
+Also update LESSONS_LEARNED.md and DECISIONS.md before you fully finish."""
 
     output = {
         "hookSpecificOutput": {
