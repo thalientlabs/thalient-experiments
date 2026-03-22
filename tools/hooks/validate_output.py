@@ -97,7 +97,10 @@ After the Arbiter responds:
 - If REJECT: stop what you're doing and explain the situation to the PI.
 - If ESCALATE: notify the PI via `python tools/notify.py "Arbiter escalation: [summary]"`.
 
-Also update LESSONS_LEARNED.md and DECISIONS.md before you fully finish."""
+Also before you fully finish:
+1. Append a log entry to the current experiment's Status.md (or Readme.md if no experiment) with: date, what you did, what you decided, and what's next.
+2. Update LESSONS_LEARNED.md with anything you learned.
+3. Update DECISIONS.md with any decisions you made."""
 
     output = {
         "hookSpecificOutput": {
